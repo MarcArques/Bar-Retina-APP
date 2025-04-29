@@ -1,6 +1,5 @@
 package com.example.bar_retina_app;
 
-
 import android.os.Handler;
 import android.os.Looper;
 
@@ -32,28 +31,35 @@ public class UtilsWS {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
                     if (onOpenCallBack != null) {
-                        mainHandler.post(() -> onOpenCallBack.accept("Connected"));
+                        mainHandler.post(() -> onOpenCallBack.accept("✅ Conectado correctamente"));
                     }
                 }
 
                 @Override
                 public void onMessage(String message) {
-                    // No lo usamos en APP/INICI
+                    // No se usa en APP/INICI
                 }
 
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
+                    if (onErrorCallBack != null) {
+                        mainHandler.post(() -> onErrorCallBack.accept("Conexión cerrada: " + reason));
+                    }
                 }
 
                 @Override
                 public void onError(Exception ex) {
                     if (onErrorCallBack != null) {
-                        mainHandler.post(() -> onErrorCallBack.accept(ex.getMessage()));
+                        String msg = (ex.getMessage() != null) ? ex.getMessage() : "Error desconocido";
+                        mainHandler.post(() -> onErrorCallBack.accept("Error de conexión: " + msg));
                     }
                 }
             };
             client.connect();
         } catch (URISyntaxException e) {
+            if (onErrorCallBack != null) {
+                mainHandler.post(() -> onErrorCallBack.accept("❌ URL inválida: " + location));
+            }
             e.printStackTrace();
         }
     }
