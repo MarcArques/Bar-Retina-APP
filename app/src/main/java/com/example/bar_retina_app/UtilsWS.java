@@ -20,6 +20,8 @@ public class UtilsWS {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private String location;
 
+    private Consumer<String> onMessageCallBack = null;
+
     private UtilsWS(String location) {
         this.location = location;
         createWebSocketClient();
@@ -31,13 +33,15 @@ public class UtilsWS {
                 @Override
                 public void onOpen(ServerHandshake handshake) {
                     if (onOpenCallBack != null) {
-                        mainHandler.post(() -> onOpenCallBack.accept("✅ Conectado correctamente"));
+                        mainHandler.post(() -> onOpenCallBack.accept("Conectado correctamente"));
                     }
                 }
 
                 @Override
                 public void onMessage(String message) {
-                    // No se usa en APP/INICI
+                    if (onMessageCallBack != null) {
+                        mainHandler.post(() -> onMessageCallBack.accept(message));
+                    }
                 }
 
                 @Override
@@ -49,16 +53,18 @@ public class UtilsWS {
 
                 @Override
                 public void onError(Exception ex) {
+                    ex.printStackTrace(); // añade esto para que veas el stack trace en Logcat
                     if (onErrorCallBack != null) {
                         String msg = (ex.getMessage() != null) ? ex.getMessage() : "Error desconocido";
                         mainHandler.post(() -> onErrorCallBack.accept("Error de conexión: " + msg));
                     }
                 }
+
             };
             client.connect();
         } catch (URISyntaxException e) {
             if (onErrorCallBack != null) {
-                mainHandler.post(() -> onErrorCallBack.accept("❌ URL inválida: " + location));
+                mainHandler.post(() -> onErrorCallBack.accept("URL inválida: " + location));
             }
             e.printStackTrace();
         }
@@ -68,6 +74,10 @@ public class UtilsWS {
         if (sharedInstance == null) {
             sharedInstance = new UtilsWS(location);
         }
+        return sharedInstance;
+    }
+
+    public static UtilsWS getSharedInstance() {
         return sharedInstance;
     }
 
@@ -87,5 +97,9 @@ public class UtilsWS {
 
     public boolean isOpen() {
         return client != null && client.isOpen();
+    }
+
+    public void onMessage(Consumer<String> callBack) {
+        this.onMessageCallBack = callBack;
     }
 }
