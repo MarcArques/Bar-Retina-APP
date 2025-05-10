@@ -6,6 +6,8 @@ import android.os.Looper;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,11 +21,13 @@ public class UtilsWS {
     private Consumer<String> onErrorCallBack = null;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private String location;
+    private String name;
 
     private Consumer<String> onMessageCallBack = null;
 
-    private UtilsWS(String location) {
+    private UtilsWS(String location, String name) {
         this.location = location;
+        this.name = name;
         createWebSocketClient();
     }
 
@@ -35,6 +39,15 @@ public class UtilsWS {
                     if (onOpenCallBack != null) {
                         mainHandler.post(() -> onOpenCallBack.accept("Conectado correctamente"));
                     }
+                    JSONObject rst = new JSONObject();
+                    try {
+                        rst.put("type", "registration");
+                        rst.put("name", name);
+                        client.send(rst.toString());
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+
                 }
 
                 @Override
@@ -70,9 +83,9 @@ public class UtilsWS {
         }
     }
 
-    public static UtilsWS getSharedInstance(String location) {
+    public static UtilsWS getSharedInstance(String location, String name) {
         if (sharedInstance == null) {
-            sharedInstance = new UtilsWS(location);
+            sharedInstance = new UtilsWS(location, name);
         }
         return sharedInstance;
     }
