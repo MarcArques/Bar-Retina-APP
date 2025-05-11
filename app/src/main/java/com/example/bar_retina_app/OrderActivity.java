@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +13,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.List;
 
 public class OrderActivity extends AppCompatActivity {
 
@@ -35,18 +38,32 @@ public class OrderActivity extends AppCompatActivity {
         orderRecycler = findViewById(R.id.orderRecycler);
         totalAmount = findViewById(R.id.totalAmount);
 
-        addMoreButton.setOnClickListener(v->{
-            finish();
-        });
+        addMoreButton.setOnClickListener(v -> finish());
 
         orderRecycler.setLayoutManager(new LinearLayoutManager(this));
         OrderAdapter orderAdapter = new OrderAdapter(() -> dataChanged());
         orderRecycler.setAdapter(orderAdapter);
 
-        totalAmount.setText(String.format("%.2f€",AppData.getInstance().getTotalBill()));
+        totalAmount.setText(String.format("%.2f€", AppData.getInstance().getTotalBill()));
+
+        Button enviarButton = findViewById(R.id.sendButton); // CORREGIDO
+
+        enviarButton.setOnClickListener(v -> {
+            String camarero = UtilsConfigXML.readConfig(this)[1];
+            int taula = 1; // Puedes hacerlo dinámico en el futuro
+            List<OrderItem> order = AppData.getInstance().order;
+
+            UtilsWS.getSharedInstance().enviarComanda(camarero, taula, order);
+
+            Toast.makeText(this, "Pedido enviado", Toast.LENGTH_SHORT).show();
+
+            // Limpiar pedido
+            order.clear();
+            finish();
+        });
     }
 
     private void dataChanged() {
-        totalAmount.setText(String.format("%.2f€",AppData.getInstance().getTotalBill()));
+        totalAmount.setText(String.format("%.2f€", AppData.getInstance().getTotalBill()));
     }
 }
