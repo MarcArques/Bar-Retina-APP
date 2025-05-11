@@ -16,6 +16,8 @@ public class CtrlConfig extends AppCompatActivity {
     TextView txtMessage;
     Button btnConnect;
 
+    String name;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,7 +30,7 @@ public class CtrlConfig extends AppCompatActivity {
 
         btnConnect.setOnClickListener(v -> {
             String host = txtHost.getText().toString().trim();
-            String name = txtName.getText().toString().trim();
+            name = txtName.getText().toString().trim();
 
             if (host.isEmpty() || name.isEmpty()) {
                 Toast.makeText(this, "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show();
@@ -44,11 +46,13 @@ public class CtrlConfig extends AppCompatActivity {
     }
 
     private void conectarAlServidor(String host) {
-        UtilsWS wsClient = UtilsWS.getSharedInstance(host);
+        UtilsWS wsClient = UtilsWS.getSharedInstance(host, name);
 
         wsClient.onOpen((message) -> runOnUiThread(() -> {
             Toast.makeText(this, "Conexión exitosa", Toast.LENGTH_SHORT).show();
-            // Podrías redirigir a otra actividad aquí si quieres
+            Intent mainIntent = new Intent(CtrlConfig.this, MainActivity.class);
+            startActivity(mainIntent);
+            finish();
         }));
 
         wsClient.onError((error) -> runOnUiThread(() -> {
