@@ -71,7 +71,7 @@ public class AppData {
     public float getTotalBill () {
         float total = 0f;
         for (OrderItem item : order) {
-            total += item.getProduct().getPrice();
+            total += item.getProduct().getPrice() * item.getQuantity();
         }
         return total;
     }

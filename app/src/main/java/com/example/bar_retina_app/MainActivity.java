@@ -39,6 +39,10 @@ public class MainActivity extends AppCompatActivity {
         tagsRecycler = findViewById(R.id.tagsRecycler);
         orderButton = findViewById(R.id.orderButton);
 
+        orderButton.setOnClickListener(v -> {
+            openOrderScreen();
+        });
+
         handleConfig();
 
     }
@@ -102,6 +106,11 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CtrlConfig.class);
         startActivity(intent);
         finish();
+    }
+
+    private void openOrderScreen () {
+        Intent intent = new Intent(this, OrderActivity.class);
+        startActivity(intent);
     }
 
     private void loadData() {
