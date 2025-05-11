@@ -12,6 +12,9 @@ import org.json.JSONObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.function.Consumer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class UtilsWS {
 
@@ -23,6 +26,7 @@ public class UtilsWS {
     private String location;
     private String name;
 
+    private ScheduledExecutorService pingScheduler;
     private Consumer<String> onMessageCallBack = null;
 
     private UtilsWS(String location, String name) {
@@ -47,7 +51,6 @@ public class UtilsWS {
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
                     }
-
                 }
 
                 @Override
@@ -59,6 +62,7 @@ public class UtilsWS {
 
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
+                    stopPingRoutine();
                     if (onErrorCallBack != null) {
                         mainHandler.post(() -> onErrorCallBack.accept("Conexión cerrada: " + reason));
                     }
@@ -66,15 +70,18 @@ public class UtilsWS {
 
                 @Override
                 public void onError(Exception ex) {
-                    ex.printStackTrace(); // añade esto para que veas el stack trace en Logcat
+                    stopPingRoutine();
+                    ex.printStackTrace();
                     if (onErrorCallBack != null) {
                         String msg = (ex.getMessage() != null) ? ex.getMessage() : "Error desconocido";
                         mainHandler.post(() -> onErrorCallBack.accept("Error de conexión: " + msg));
                     }
                 }
-
             };
+
             client.connect();
+            startPingRoutine();
+
         } catch (URISyntaxException e) {
             if (onErrorCallBack != null) {
                 mainHandler.post(() -> onErrorCallBack.accept("URL inválida: " + location));
@@ -114,5 +121,20 @@ public class UtilsWS {
 
     public void onMessage(Consumer<String> callBack) {
         this.onMessageCallBack = callBack;
+    }
+
+    private void startPingRoutine() {
+        pingScheduler = Executors.newSingleThreadScheduledExecutor();
+        pingScheduler.scheduleWithFixedDelay(() -> {
+            if (client != null && client.isOpen()) {
+                client.send("{\"type\":\"ping\"}");
+            }
+        }, 30, 30, TimeUnit.SECONDS); // primer ping a los 30s, luego cada 30s de espera después del anterior
+    }
+
+    private void stopPingRoutine() {
+        if (pingScheduler != null && !pingScheduler.isShutdown()) {
+            pingScheduler.shutdownNow();
+        }
     }
 }

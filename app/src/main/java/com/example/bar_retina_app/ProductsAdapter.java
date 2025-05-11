@@ -54,7 +54,6 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.Produc
                 appData.order.add(new OrderItem(product));
             }
 
-            holder.productQuantity.setText(String.valueOf(appData.getProductQuantity(product.getName())));
             onProductAdded.run();
         });
     }
@@ -70,7 +69,6 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.Produc
         TextView productName;
         TextView productDescription;
         TextView productPrice;
-        TextView productQuantity;
 
         public ProductViewHolder(View itemView) {
             super(itemView);
@@ -78,7 +76,6 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.Produc
             productName = itemView.findViewById(R.id.productName);
             productDescription = itemView.findViewById(R.id.productDescription);
             productPrice = itemView.findViewById(R.id.productPrice);
-            productQuantity = itemView.findViewById(R.id.productQuantity);
         }
     }
 }

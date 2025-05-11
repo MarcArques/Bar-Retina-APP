@@ -45,7 +45,16 @@ public class MainActivity extends AppCompatActivity {
 
         handleConfig();
 
+        loadData();
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        float total = AppData.getInstance().getTotalBill();
+        orderButton.setText(String.format("Total: %.2f€", total));
+    }
+
 
     private void handleConfig() {
         if (UtilsConfigXML.configExists(this)) {
