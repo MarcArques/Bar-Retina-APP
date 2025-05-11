@@ -50,7 +50,7 @@ public class CtrlConfig extends AppCompatActivity {
 
         wsClient.onOpen((message) -> runOnUiThread(() -> {
             Toast.makeText(this, "Conexión exitosa", Toast.LENGTH_SHORT).show();
-            Intent mainIntent = new Intent(CtrlConfig.this, MainActivity.class);
+            Intent mainIntent = new Intent(CtrlConfig.this, TablesActivity.class);
             startActivity(mainIntent);
             finish();
         }));

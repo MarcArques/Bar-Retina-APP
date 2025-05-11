@@ -7,16 +7,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class AppData {
     private static AppData instance;
     public List<Product> products;
     public List<OrderItem> order;
+    public Table table;
+    public ArrayList<Table> tables;
 
     private AppData() {
         this.products = new ArrayList<>();
         this.order = new ArrayList<>();
+        this.tables = new ArrayList<>();
     }
 
     public static AppData getInstance() {
@@ -84,4 +88,21 @@ public class AppData {
         }
         return false;
     }
+
+    public void loadTables(JSONArray obj) {
+        tables.clear();
+        for(int i = 0; i < obj.length(); i++) {
+            try {
+                JSONObject table = obj.getJSONObject(i);
+                int number = table.getInt("number");
+                int clients = table.getInt("clients");
+                Table newTable = new Table(number, clients);
+                tables.add(newTable);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        Log.d("TABLES", tables.toString());
+    }
+
 }

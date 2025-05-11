@@ -137,4 +137,8 @@ public class UtilsWS {
             pingScheduler.shutdownNow();
         }
     }
+
+    public void send(String msg) {
+        client.send(msg);
+    }
 }

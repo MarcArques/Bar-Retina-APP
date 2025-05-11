@@ -26,7 +26,6 @@ public class TagAdapter extends RecyclerView.Adapter<TagAdapter.TagViewHolder> {
         this.tags = new ArrayList<>();
         AppData appData = AppData.getInstance();
 
-        // Obtener los nombres únicos de los tags manteniendo el orden
         Set<String> uniqueTags = new LinkedHashSet<>();
         for (Product product : appData.products) {
             uniqueTags.add(product.getTag().getName());

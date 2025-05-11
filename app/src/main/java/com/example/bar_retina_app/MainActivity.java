@@ -73,37 +73,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void conectarAlServidor() {
-        UtilsWS wsClient = UtilsWS.getSharedInstance(urlServidor, nombreCamarero);
+        UtilsWS wsClient = UtilsWS.getSharedInstance();
 
-        wsClient.onOpen((message) -> runOnUiThread(() -> {
-            Toast.makeText(this, "Conexión exitosa", Toast.LENGTH_SHORT).show();
-            // Aquí podrías ir a otra pantalla principal si quieres
-        }));
+        JSONObject rst = new JSONObject();
+        try {
+            rst.put("type","getAllProductes");
+            wsClient.send(rst.toString());
+            Log.d("PRODUCTS", rst.toString());
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
 
-        wsClient.onError((error) -> runOnUiThread(() -> {
-            Toast.makeText(this, "Error de conexión: " + error, Toast.LENGTH_LONG).show();
-            abrirPantallaConfig();
-        }));
 
         wsClient.onMessage((message) -> runOnUiThread(() -> {
             try {
                 JSONObject msg = new JSONObject(message);
-                if(msg.has("type")) {
-                    String type = msg.getString("type");
-                    AppData appData = AppData.getInstance();
-                    switch (type) {
-                        case "allProductes":
-                            JSONArray prodcutes = msg.getJSONArray("productes");
-                            appData.collectProducts(prodcutes);
-                            loadData();
-                            break;
-                        default:
-                            Log.d("ONMESSAGE", "Unknown server type: "+type);
-                            break;
-                    }
-                }else {
-                    Log.e("ONMESSAGE", "Response type not found");
-                }
+                Log.d("PRODUCTS", "Received message: "+message);
+                AppData appData = AppData.getInstance();
+                appData.collectProducts(msg.getJSONArray("productes"));
+                loadData();
             } catch (JSONException e) {
                 Log.e("ONMESSAGE", "Incorrect response format");
             }

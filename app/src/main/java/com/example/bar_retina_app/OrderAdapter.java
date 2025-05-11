@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
 
-    private AppData appData;
+    private final AppData appData;
     private Runnable onDataChanged;
 
     public OrderAdapter(Runnable onDataChanged) {
