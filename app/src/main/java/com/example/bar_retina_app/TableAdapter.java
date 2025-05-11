@@ -37,10 +37,11 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableViewHol
 
         holder.tableNum.setText("Taula: "+table.getNumber());
         holder.clientsNum.setText("Clients: "+table.getClients());
-        holder.totalBill.setText(String.format("%.2f€", appData.getTotalBill()));
+        holder.totalBill.setText(String.format("%.2f€", table.getTotalBill()));
 
         holder.tableLayout.setOnClickListener(v -> {
             Intent intent = new Intent(context, MainActivity.class);
+            appData.table = table;
             context.startActivity(intent);
         });
     }

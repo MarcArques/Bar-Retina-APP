@@ -30,13 +30,14 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     @Override
     public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
 
-        OrderItem item = appData.order.get(position);
+        Table table = appData.table;
+        OrderItem item = table.order.get(position);
 
         holder.buttonDecrease.setOnClickListener(v -> {
             item.deleteOne();
             if (item.getQuantity() <= 0) {
                 int pos = holder.getAdapterPosition();
-                appData.order.remove(pos);
+                table.order.remove(pos);
                 notifyItemRemoved(pos);
                 if (onDataChanged != null) onDataChanged.run();
             } else {
@@ -63,7 +64,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     @Override
     public int getItemCount() {
-        return appData.order.size();
+        return appData.table.order.size();
     }
 
     public static class OrderViewHolder extends RecyclerView.ViewHolder {

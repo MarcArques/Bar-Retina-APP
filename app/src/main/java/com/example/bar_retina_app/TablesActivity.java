@@ -92,13 +92,17 @@ public class TablesActivity extends AppCompatActivity {
                     AppData appData = AppData.getInstance();
                     switch(type) {
                         case "tables":
-                            runOnUiThread(() -> adapter.notifyDataSetChanged());
+                            Log.d("TABLES","Received tables");
                             appData.loadTables(msg.getJSONArray("tables"));
+                            runOnUiThread(() -> adapter.notifyDataSetChanged());
                             break;
                         case "allProductes":
                             Log.d("PRODUCTS", "Products received");
                             JSONArray productes = msg.getJSONArray("productes");
                             appData.collectProducts(productes);
+                            JSONObject rst = new JSONObject();
+                            rst.put("type", "getTables");
+                            wsClient.send(rst.toString());
                             break;
                         default:
                             break;

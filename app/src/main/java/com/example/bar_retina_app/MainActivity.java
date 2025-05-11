@@ -24,8 +24,6 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String urlServidor;
-    private String nombreCamarero;
     private RecyclerView tagsRecycler;
     private Button orderButton;
 
@@ -51,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        float total = AppData.getInstance().getTotalBill();
+        float total = AppData.getInstance().table.getTotalBill();
         orderButton.setText(String.format("Total: %.2f€", total));
     }
 
@@ -60,9 +58,6 @@ public class MainActivity extends AppCompatActivity {
         if (UtilsConfigXML.configExists(this)) {
             String[] config = UtilsConfigXML.readConfig(this);
             if (config != null) {
-                urlServidor = config[0];
-                nombreCamarero = config[1];
-
                 conectarAlServidor();
             } else {
                 abrirPantallaConfig();
@@ -113,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadData() {
         tagsRecycler.setLayoutManager(new LinearLayoutManager(this));
         TagAdapter tagsAdapter = new TagAdapter(this, () -> {
-            float total = AppData.getInstance().getTotalBill();
+            float total = AppData.getInstance().table.getTotalBill();
             orderButton.setText(String.format("Total: %.2f€", total));
         });
         tagsRecycler.setAdapter(tagsAdapter);

@@ -47,11 +47,12 @@ public class ProductsAdapter extends RecyclerView.Adapter<ProductsAdapter.Produc
 
         holder.productLayout.setOnClickListener(v -> {
             AppData appData = AppData.getInstance();
-            if(appData.containsProduct(product.getName())) {
-                OrderItem item = appData.getOrderItemByName(product.getName());
+            Table table = appData.table;
+            if(table.containsProduct(product.getName())) {
+                OrderItem item = table.getOrderItemByName(product.getName());
                 item.addOne();
             }else {
-                appData.order.add(new OrderItem(product));
+                table.order.add(new OrderItem(product));
             }
 
             onProductAdded.run();

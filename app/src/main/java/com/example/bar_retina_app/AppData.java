@@ -13,13 +13,11 @@ import java.util.List;
 public class AppData {
     private static AppData instance;
     public List<Product> products;
-    public List<OrderItem> order;
     public Table table;
     public ArrayList<Table> tables;
 
     private AppData() {
         this.products = new ArrayList<>();
-        this.order = new ArrayList<>();
         this.tables = new ArrayList<>();
     }
 
@@ -54,43 +52,9 @@ public class AppData {
         }
     }
 
-    public OrderItem getOrderItemByName(String productName) {
-        for (OrderItem item : order) {
-            if (item.getProduct().getName().equals(productName)) {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    public int getProductQuantity (String productName) {
-        for(OrderItem item : order) {
-            if(item.getProduct().getName().equals(productName)) {
-                return item.getQuantity();
-            }
-        }
-        return 0;
-    }
-
-    public float getTotalBill () {
-        float total = 0f;
-        for (OrderItem item : order) {
-            total += item.getProduct().getPrice() * item.getQuantity();
-        }
-        return total;
-    }
-
-    public boolean containsProduct(String productName) {
-        for (OrderItem item : order) {
-            if (item.getProduct().getName().equals(productName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void loadTables(JSONArray obj) {
         tables.clear();
+        Log.d("TABLES", "Loading tables: "+obj.length());
         for(int i = 0; i < obj.length(); i++) {
             try {
                 JSONObject table = obj.getJSONObject(i);
@@ -98,6 +62,25 @@ public class AppData {
                 int clients = table.getInt("clients");
                 Table newTable = new Table(number, clients);
                 tables.add(newTable);
+                JSONArray products = table.getJSONArray("items");
+                for(int j = 0; j < products.length(); j++) {
+                    JSONObject product = products.getJSONObject(j);
+                    Log.i("TABLES", product.toString());
+                    String name = product.getString("product");
+                    int amount = product.getInt("amount");
+                    Product newProduct = null;
+                    for(Product p : this.products) {
+                        Log.i("TABLES", p.getName());
+                        if(p.getName().equals(name)) {
+                            newProduct = p;
+                        }
+                    }
+                    if(newProduct == null) {
+                        return;
+                    }
+                    newTable.order.add(new OrderItem(newProduct, amount));
+                    Log.d("TABLES", newTable.toString());
+                }
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }

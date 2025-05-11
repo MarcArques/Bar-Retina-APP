@@ -148,19 +148,22 @@ public class UtilsWS {
     public void enviarComanda(String camarero, int taula, List<OrderItem> items) {
         try {
             JSONObject orderJson = new JSONObject();
-            orderJson.put("type", "new_order");
-            orderJson.put("camarero", camarero);
-            orderJson.put("taula", taula);
+            orderJson.put("type", "newOrder");
+            orderJson.put("waiter", camarero);
+            orderJson.put("tableNum", taula);
 
             JSONArray productsArray = new JSONArray();
             for (OrderItem item : items) {
                 JSONObject productJson = new JSONObject();
-                productJson.put("nom", item.getProduct().getName());
-                productJson.put("quantitat", item.getQuantity());
+                productJson.put("name", item.getProduct().getName());
+                productJson.put("description", item.getProduct().getDescription());
+                productJson.put("price", item.getProduct().getPrice());
+                productJson.put("tag", item.getProduct().getTag().getName());
+                productJson.put("amount", item.getQuantity());
                 productsArray.put(productJson);
             }
 
-            orderJson.put("productes", productsArray);
+            orderJson.put("products", productsArray);
 
             if (client != null && client.isOpen()) {
                 client.send(orderJson.toString());

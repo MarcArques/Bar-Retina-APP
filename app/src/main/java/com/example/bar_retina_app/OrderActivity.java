@@ -2,6 +2,7 @@ package com.example.bar_retina_app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,26 +45,33 @@ public class OrderActivity extends AppCompatActivity {
         OrderAdapter orderAdapter = new OrderAdapter(() -> dataChanged());
         orderRecycler.setAdapter(orderAdapter);
 
-        totalAmount.setText(String.format("%.2f€", AppData.getInstance().getTotalBill()));
+        totalAmount.setText(String.format("%.2f€", AppData.getInstance().table.getTotalBill()));
 
         Button enviarButton = findViewById(R.id.sendButton); // CORREGIDO
 
         enviarButton.setOnClickListener(v -> {
             String camarero = UtilsConfigXML.readConfig(this)[1];
-            int taula = 1; // Puedes hacerlo dinámico en el futuro
-            List<OrderItem> order = AppData.getInstance().order;
+            int taula = AppData.getInstance().table.getNumber();
+            List<OrderItem> order = AppData.getInstance().table.order;
 
-            UtilsWS.getSharedInstance().enviarComanda(camarero, taula, order);
+            UtilsWS ws = UtilsWS.getSharedInstance();
+            if (ws != null && ws.isOpen()) {
+                ws.enviarComanda(camarero, taula, order);
+                order.clear();
+                finish();
+            } else {
+                Log.d("ORDER","WS no conectado");
+                Toast.makeText(this, "Error: WebSocket no conectado", Toast.LENGTH_LONG).show();
+            }
 
-            Toast.makeText(this, "Pedido enviado", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Order sent", Toast.LENGTH_SHORT).show();
 
-            // Limpiar pedido
             order.clear();
             finish();
         });
     }
 
     private void dataChanged() {
-        totalAmount.setText(String.format("%.2f€", AppData.getInstance().getTotalBill()));
+        totalAmount.setText(String.format("%.2f€", AppData.getInstance().table.getTotalBill()));
     }
 }

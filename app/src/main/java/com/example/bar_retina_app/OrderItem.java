@@ -8,6 +8,10 @@ public class OrderItem {
         this.product = product;
         quantity = 1;
     }
+    public OrderItem(Product product, int amount) {
+        this.product = product;
+        this.quantity = amount;
+    }
 
     public void setProduct(Product product) {
         this.product = product;
