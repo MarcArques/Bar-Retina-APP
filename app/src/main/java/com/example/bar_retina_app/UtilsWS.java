@@ -15,6 +15,9 @@ import java.util.function.Consumer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class UtilsWS {
 
@@ -137,4 +140,31 @@ public class UtilsWS {
             pingScheduler.shutdownNow();
         }
     }
+
+    public void enviarComanda(String camarero, int taula, List<OrderItem> items) {
+        try {
+            JSONObject orderJson = new JSONObject();
+            orderJson.put("type", "new_order");
+            orderJson.put("camarero", camarero);
+            orderJson.put("taula", taula);
+
+            JSONArray productsArray = new JSONArray();
+            for (OrderItem item : items) {
+                JSONObject productJson = new JSONObject();
+                productJson.put("nom", item.getProduct().getName());
+                productJson.put("quantitat", item.getQuantity());
+                productsArray.put(productJson);
+            }
+
+            orderJson.put("productes", productsArray);
+
+            if (client != null && client.isOpen()) {
+                client.send(orderJson.toString());
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
