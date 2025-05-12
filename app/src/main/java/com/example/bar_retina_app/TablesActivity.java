@@ -3,7 +3,6 @@ package com.example.bar_retina_app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -15,7 +14,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,13 +36,40 @@ public class TablesActivity extends AppCompatActivity {
         });
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
-        handleConfig();
-
         tableRecycler = findViewById(R.id.tablesRecycler);
-
         tableRecycler.setLayoutManager(new GridLayoutManager(this, 2));
-        adapter = new TableAdapter(this);
+        adapter = new TableAdapter(this, this::finish);
         tableRecycler.setAdapter(adapter);
+
+        handleConfig();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        AppData.getInstance().setOnDataChangedListener(new AppData.OnDataChangedListener() {
+            @Override
+            public void onTablesChanged() {
+                runOnUiThread(() -> adapter.notifyDataSetChanged());
+            }
+
+            @Override
+            public void onProductsChanged() {
+
+            }
+
+            @Override
+            public void onCurrentTableChanged() {
+
+            }
+        });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppData.getInstance().clearListener();
     }
 
     private void handleConfig() {
@@ -53,7 +78,6 @@ public class TablesActivity extends AppCompatActivity {
             if (config != null) {
                 urlServidor = config[0];
                 nombreCamarero = config[1];
-
                 conectarAlServidor();
             } else {
                 abrirPantallaConfig();
@@ -68,51 +92,20 @@ public class TablesActivity extends AppCompatActivity {
 
         wsClient.onOpen((message) -> runOnUiThread(() -> {
             Toast.makeText(this, "Connectat", Toast.LENGTH_SHORT).show();
-            JSONObject rst = new JSONObject();
             try {
-                rst.put("type","getTables");
-                Toast.makeText(this, "Sent getTables", Toast.LENGTH_SHORT).show();
+                JSONObject rst = new JSONObject();
+                rst.put("type", "getTables");
                 wsClient.send(rst.toString());
+                Log.d("TABLES", "Sent getTables");
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
-
         }));
 
         wsClient.onError((error) -> runOnUiThread(() -> {
             Toast.makeText(this, "Error de connexió: " + error, Toast.LENGTH_LONG).show();
             abrirPantallaConfig();
         }));
-
-        wsClient.onMessage((message) -> {
-            try {
-                JSONObject msg = new JSONObject(message);
-                if(msg.has("key")) {
-                    String type = msg.getString("key");
-                    AppData appData = AppData.getInstance();
-                    switch(type) {
-                        case "tables":
-                            Log.d("TABLES","Received tables");
-                            appData.loadTables(msg.getJSONArray("tables"));
-                            runOnUiThread(() -> adapter.notifyDataSetChanged());
-                            break;
-                        case "allProductes":
-                            Log.d("PRODUCTS", "Products received");
-                            JSONArray productes = msg.getJSONArray("productes");
-                            appData.collectProducts(productes);
-                            JSONObject rst = new JSONObject();
-                            rst.put("type", "getTables");
-                            wsClient.send(rst.toString());
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            } catch (JSONException e) {
-                Toast.makeText(this, "Error reading tables", Toast.LENGTH_LONG).show();
-            }
-
-        });
     }
 
     private void abrirPantallaConfig() {

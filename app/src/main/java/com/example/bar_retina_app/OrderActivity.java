@@ -15,6 +15,9 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 public class OrderActivity extends AppCompatActivity {
@@ -57,19 +60,49 @@ public class OrderActivity extends AppCompatActivity {
             UtilsWS ws = UtilsWS.getSharedInstance();
             if (ws != null && ws.isOpen()) {
                 ws.enviarComanda(camarero, taula, order);
-                order.clear();
+                JSONObject rst = new JSONObject();
+                try {
+                    rst.put("type", "getTables");
+                    ws.send(rst.toString());
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                }
+
                 finish();
             } else {
                 Log.d("ORDER","WS no conectado");
                 Toast.makeText(this, "Error: WebSocket no conectado", Toast.LENGTH_LONG).show();
             }
 
-            Toast.makeText(this, "Order sent", Toast.LENGTH_SHORT).show();
-
             order.clear();
             finish();
         });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        AppData.getInstance().setOnDataChangedListener(new AppData.OnDataChangedListener() {
+            @Override
+            public void onTablesChanged() {}
+
+            @Override
+            public void onProductsChanged() {}
+
+            @Override
+            public void onCurrentTableChanged() {
+                runOnUiThread(() -> dataChanged());
+            }
+        });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppData.getInstance().clearListener();
+    }
+
 
     private void dataChanged() {
         totalAmount.setText(String.format("%.2f€", AppData.getInstance().table.getTotalBill()));

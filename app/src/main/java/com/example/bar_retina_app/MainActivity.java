@@ -3,47 +3,41 @@ package com.example.bar_retina_app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView tagsRecycler;
     private Button orderButton;
+    private Button goBackButton;
+    private TagAdapter tagsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-
         setContentView(R.layout.activity_main);
 
         tagsRecycler = findViewById(R.id.tagsRecycler);
         orderButton = findViewById(R.id.orderButton);
+        goBackButton = findViewById(R.id.backButton);
 
-        orderButton.setOnClickListener(v -> {
-            openOrderScreen();
+        orderButton.setOnClickListener(v -> openOrderScreen());
+        goBackButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, TablesActivity.class);
+            startActivity(intent);
         });
 
         handleConfig();
-
-        loadData();
+        setupRecycler();
     }
 
     @Override
@@ -51,8 +45,35 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         float total = AppData.getInstance().table.getTotalBill();
         orderButton.setText(String.format("Total: %.2f€", total));
+
+        AppData.getInstance().setOnDataChangedListener(new AppData.OnDataChangedListener() {
+            @Override
+            public void onTablesChanged() {
+                // No hace falta aquí
+            }
+
+            @Override
+            public void onProductsChanged() {
+                runOnUiThread(() -> {
+                    if (tagsAdapter != null) tagsAdapter.notifyDataSetChanged();
+                });
+            }
+
+            @Override
+            public void onCurrentTableChanged() {
+                runOnUiThread(() -> {
+                    float total = AppData.getInstance().table.getTotalBill();
+                    orderButton.setText(String.format("Total: %.2f€", total));
+                });
+            }
+        });
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppData.getInstance().clearListener();
+    }
 
     private void handleConfig() {
         if (UtilsConfigXML.configExists(this)) {
@@ -70,28 +91,14 @@ public class MainActivity extends AppCompatActivity {
     private void conectarAlServidor() {
         UtilsWS wsClient = UtilsWS.getSharedInstance();
 
-        JSONObject rst = new JSONObject();
         try {
-            rst.put("type","getAllProductes");
-            wsClient.send(rst.toString());
-            Log.d("PRODUCTS", rst.toString());
+            JSONObject request = new JSONObject();
+            request.put("type", "getAllProductes");
+            wsClient.send(request.toString());
+            Log.d("WS", "Product request sent");
         } catch (JSONException e) {
-            throw new RuntimeException(e);
+            Log.e("WS", "Error creando petición de productos");
         }
-
-
-        wsClient.onMessage((message) -> runOnUiThread(() -> {
-            try {
-                JSONObject msg = new JSONObject(message);
-                Log.d("PRODUCTS", "Received message: "+message);
-                AppData appData = AppData.getInstance();
-                appData.collectProducts(msg.getJSONArray("productes"));
-                loadData();
-            } catch (JSONException e) {
-                Log.e("ONMESSAGE", "Incorrect response format");
-            }
-
-        }));
     }
 
     private void abrirPantallaConfig() {
@@ -100,18 +107,17 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    private void openOrderScreen () {
+    private void openOrderScreen() {
         Intent intent = new Intent(this, OrderActivity.class);
         startActivity(intent);
     }
 
-    private void loadData() {
+    private void setupRecycler() {
         tagsRecycler.setLayoutManager(new LinearLayoutManager(this));
-        TagAdapter tagsAdapter = new TagAdapter(this, () -> {
+        tagsAdapter = new TagAdapter(this, () -> {
             float total = AppData.getInstance().table.getTotalBill();
             orderButton.setText(String.format("Total: %.2f€", total));
         });
         tagsRecycler.setAdapter(tagsAdapter);
     }
 }
-

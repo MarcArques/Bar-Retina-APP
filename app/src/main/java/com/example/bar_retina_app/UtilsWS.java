@@ -2,22 +2,23 @@ package com.example.bar_retina_app;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
+import android.widget.Toast;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.function.Consumer;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.List;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.function.Consumer;
 
 public class UtilsWS {
 
@@ -30,7 +31,6 @@ public class UtilsWS {
     private String name;
 
     private ScheduledExecutorService pingScheduler;
-    private Consumer<String> onMessageCallBack = null;
 
     private UtilsWS(String location, String name) {
         this.location = location;
@@ -58,9 +58,7 @@ public class UtilsWS {
 
                 @Override
                 public void onMessage(String message) {
-                    if (onMessageCallBack != null) {
-                        mainHandler.post(() -> onMessageCallBack.accept(message));
-                    }
+                    mainHandler.post(() -> handleServerMessage(message));
                 }
 
                 @Override
@@ -93,6 +91,35 @@ public class UtilsWS {
         }
     }
 
+    private void handleServerMessage(String message) {
+        Log.d("WS_MESSAGE", message);
+        try {
+            JSONObject msg = new JSONObject(message);
+            if (msg.has("key")) {
+                String key = msg.getString("key");
+                AppData appData = AppData.getInstance();
+
+                switch (key) {
+                    case "tables":
+                        JSONArray tables = msg.getJSONArray("tables");
+                        appData.loadTables(tables);
+                        break;
+
+                    case "allProductes":
+                        JSONArray products = msg.getJSONArray("productes");
+                        appData.collectProducts(products);
+                        break;
+
+                    default:
+                        Log.w("WS_MESSAGE", "Unknown key received: " + key);
+                        break;
+                }
+            }
+        } catch (JSONException e) {
+            Log.e("WS_MESSAGE", "JSON error: " + e.getMessage());
+        }
+    }
+
     public static UtilsWS getSharedInstance(String location, String name) {
         if (sharedInstance == null) {
             sharedInstance = new UtilsWS(location, name);
@@ -122,17 +149,13 @@ public class UtilsWS {
         return client != null && client.isOpen();
     }
 
-    public void onMessage(Consumer<String> callBack) {
-        this.onMessageCallBack = callBack;
-    }
-
     private void startPingRoutine() {
         pingScheduler = Executors.newSingleThreadScheduledExecutor();
         pingScheduler.scheduleWithFixedDelay(() -> {
             if (client != null && client.isOpen()) {
                 client.send("{\"type\":\"ping\"}");
             }
-        }, 30, 30, TimeUnit.SECONDS); // primer ping a los 30s, luego cada 30s de espera después del anterior
+        }, 30, 30, TimeUnit.SECONDS);
     }
 
     private void stopPingRoutine() {
@@ -144,7 +167,7 @@ public class UtilsWS {
     public void send(String msg) {
         client.send(msg);
     }
-    
+
     public void enviarComanda(String camarero, int taula, List<OrderItem> items) {
         try {
             JSONObject orderJson = new JSONObject();
@@ -173,5 +196,4 @@ public class UtilsWS {
             e.printStackTrace();
         }
     }
-
 }

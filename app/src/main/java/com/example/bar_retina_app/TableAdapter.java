@@ -17,10 +17,12 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableViewHol
 
     private final AppData appData;
     Context context;
+    Runnable onFinish;
 
-    public TableAdapter(Context context) {
+    public TableAdapter(Context context, Runnable onFinish) {
         appData = AppData.getInstance();
         this.context = context;
+        this.onFinish = onFinish;
     }
 
     @NonNull
@@ -43,6 +45,7 @@ public class TableAdapter extends RecyclerView.Adapter<TableAdapter.TableViewHol
             Intent intent = new Intent(context, MainActivity.class);
             appData.table = table;
             context.startActivity(intent);
+            onFinish.run();
         });
     }
 
