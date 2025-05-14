@@ -6,7 +6,6 @@ Aplicació Android per a cambrers i cambreres, pensada per gestionar comandes en
 
 ## ⚙️ Requisits
 
-- Android 7.0 o superior
 - Connexió a un servidor WebSocket actiu
 - Accés a la base de dades central `barretina7` (MySQL)
 
