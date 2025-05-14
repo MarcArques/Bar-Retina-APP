@@ -39,5 +39,4 @@ Aplicació Android per a cambrers i cambreres, pensada per gestionar comandes en
 ## 🔌 Connexió WebSocket
 
 La comunicació amb el servidor es fa mitjançant WebSocket. 
----
 
