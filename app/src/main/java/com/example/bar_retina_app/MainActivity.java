@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -19,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
     private Button orderButton;
     private Button goBackButton;
     private TagAdapter tagsAdapter;
+    private ImageButton settingsButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,10 +31,15 @@ public class MainActivity extends AppCompatActivity {
         tagsRecycler = findViewById(R.id.tagsRecycler);
         orderButton = findViewById(R.id.orderButton);
         goBackButton = findViewById(R.id.backButton);
+        settingsButton = findViewById(R.id.settingsButton);
 
         orderButton.setOnClickListener(v -> openOrderScreen());
         goBackButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, TablesActivity.class);
+            startActivity(intent);
+        });
+        settingsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CtrlConfig.class);
             startActivity(intent);
         });
 

@@ -3,6 +3,7 @@ package com.example.bar_retina_app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -23,6 +24,7 @@ public class TablesActivity extends AppCompatActivity {
     private String nombreCamarero;
     private RecyclerView tableRecycler;
     private TableAdapter adapter;
+    private ImageButton settingsButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +42,13 @@ public class TablesActivity extends AppCompatActivity {
         tableRecycler.setLayoutManager(new GridLayoutManager(this, 2));
         adapter = new TableAdapter(this, this::finish);
         tableRecycler.setAdapter(adapter);
+
+        settingsButton = findViewById(R.id.settingsButtonTables);
+
+        settingsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CtrlConfig.class);
+            startActivity(intent);
+        });
 
         handleConfig();
     }
@@ -92,20 +101,30 @@ public class TablesActivity extends AppCompatActivity {
 
         wsClient.onOpen((message) -> runOnUiThread(() -> {
             Toast.makeText(this, "Connectat", Toast.LENGTH_SHORT).show();
-            try {
-                JSONObject rst = new JSONObject();
-                rst.put("type", "getTables");
-                wsClient.send(rst.toString());
-                Log.d("TABLES", "Sent getTables");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            askTables(wsClient);
         }));
 
         wsClient.onError((error) -> runOnUiThread(() -> {
             Toast.makeText(this, "Error de connexió: " + error, Toast.LENGTH_LONG).show();
+            AppData appData = AppData.getInstance();
+            appData.tables.clear();
             abrirPantallaConfig();
         }));
+
+        if (wsClient.isOpen()) {
+            askTables(wsClient);
+        }
+    }
+
+    private void askTables(UtilsWS wsClient) {
+        try {
+            JSONObject rst = new JSONObject();
+            rst.put("type", "getTables");
+            wsClient.send(rst.toString());
+            Log.d("TABLES", "Sent getTables");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void abrirPantallaConfig() {
