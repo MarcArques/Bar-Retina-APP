@@ -123,9 +123,15 @@ public class UtilsWS {
     public static UtilsWS getSharedInstance(String location, String name) {
         if (sharedInstance == null) {
             sharedInstance = new UtilsWS(location, name);
+        } else {
+            if (!sharedInstance.location.equals(location) || !sharedInstance.name.equals(name)) {
+                sharedInstance.forceExit();
+                sharedInstance = new UtilsWS(location, name);
+            }
         }
         return sharedInstance;
     }
+
 
     public static UtilsWS getSharedInstance() {
         return sharedInstance;
