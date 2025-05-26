@@ -110,6 +110,14 @@ public class UtilsWS {
                         appData.collectProducts(products);
                         break;
 
+                    case "orderClosed":
+                        int tableNum = msg.getInt("tableNum");
+                        System.out.println("La taula " + tableNum + " s'ha tancat.");
+                        JSONObject req = new JSONObject();
+                        req.put("type", "getTables");
+                        send(req.toString());
+                        break;
+
                     default:
                         Log.w("WS_MESSAGE", "Unknown key received: " + key);
                         break;
@@ -123,15 +131,9 @@ public class UtilsWS {
     public static UtilsWS getSharedInstance(String location, String name) {
         if (sharedInstance == null) {
             sharedInstance = new UtilsWS(location, name);
-        } else {
-            if (!sharedInstance.location.equals(location) || !sharedInstance.name.equals(name)) {
-                sharedInstance.forceExit();
-                sharedInstance = new UtilsWS(location, name);
-            }
         }
         return sharedInstance;
     }
-
 
     public static UtilsWS getSharedInstance() {
         return sharedInstance;

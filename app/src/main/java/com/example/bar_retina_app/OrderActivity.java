@@ -50,7 +50,7 @@ public class OrderActivity extends AppCompatActivity {
 
         totalAmount.setText(String.format("%.2f€", AppData.getInstance().table.getTotalBill()));
 
-        Button enviarButton = findViewById(R.id.sendButton); // CORREGIDO
+        Button enviarButton = findViewById(R.id.sendButton);
 
         enviarButton.setOnClickListener(v -> {
             String camarero = UtilsConfigXML.readConfig(this)[1];
@@ -76,6 +76,29 @@ public class OrderActivity extends AppCompatActivity {
 
             order.clear();
             finish();
+        });
+
+        Button closeOrderButton = findViewById(R.id.closeOrderButton);
+        
+        closeOrderButton.setOnClickListener(v -> {
+            int taula = AppData.getInstance().table.getNumber();
+
+            UtilsWS ws = UtilsWS.getSharedInstance();
+            if (ws != null && ws.isOpen()) {
+                try {
+                    JSONObject request = new JSONObject();
+                    request.put("type", "closeOrder");
+                    request.put("tableNum", taula);
+
+                    ws.send(request.toString());
+                    Toast.makeText(this, "Comanda tancada correctament", Toast.LENGTH_SHORT).show();
+                    finish();
+                } catch (JSONException e) {
+                    Toast.makeText(this, "Error en JSON", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "WebSocket no connectat", Toast.LENGTH_LONG).show();
+            }
         });
     }
 
