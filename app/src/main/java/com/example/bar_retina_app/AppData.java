@@ -93,7 +93,6 @@ public class AppData {
                     Log.i("TABLES", itemJson.toString());
 
                     String productName = itemJson.getString("product");
-                    int amount = itemJson.getInt("amount");
 
                     Product matchedProduct = null;
                     for (Product p : this.products) {
@@ -108,14 +107,21 @@ public class AppData {
                         continue;
                     }
 
-                    newTable.order.add(new OrderItem(matchedProduct, amount));
+                    // Si el producte ja hi és, incrementa la quantitat
+                    OrderItem existingItem = newTable.getOrderItemByName(productName);
+                    if (existingItem != null) {
+                        existingItem.addOne();
+                    } else {
+                        newTable.order.add(new OrderItem(matchedProduct, 1));
+                    }
+
                     Log.d("TABLES", newTable.toString());
                 }
 
-                // Si es la mesa que está abierta actualmente, actualízala también
+                // Si es la taula seleccionada actualment, actualitza-la també
                 if (this.table != null && this.table.getNumber() == number) {
                     this.table = newTable;
-                    if (listener != null) listener.onCurrentTableChanged(); // <- NUEVO
+                    if (listener != null) listener.onCurrentTableChanged();
                 }
 
             } catch (JSONException e) {
@@ -129,4 +135,5 @@ public class AppData {
             listener.onTablesChanged();
         }
     }
+
 }

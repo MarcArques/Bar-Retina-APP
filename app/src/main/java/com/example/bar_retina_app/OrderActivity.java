@@ -15,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,6 +24,7 @@ import java.util.List;
 public class OrderActivity extends AppCompatActivity {
 
     private Button addMoreButton;
+    private Button closeOrderButton;
     private RecyclerView orderRecycler;
     private TextView totalAmount;
     private Runnable onDataChanged;
@@ -78,20 +80,30 @@ public class OrderActivity extends AppCompatActivity {
             finish();
         });
 
-        Button closeOrderButton = findViewById(R.id.closeOrderButton);
-        
+        closeOrderButton = findViewById(R.id.closeOrderButton);
+
         closeOrderButton.setOnClickListener(v -> {
             int taula = AppData.getInstance().table.getNumber();
+            String camarero = UtilsConfigXML.readConfig(this)[1];
 
             UtilsWS ws = UtilsWS.getSharedInstance();
             if (ws != null && ws.isOpen()) {
                 try {
-                    JSONObject request = new JSONObject();
-                    request.put("type", "closeOrder");
-                    request.put("tableNum", taula);
+                    JSONObject requestClose = new JSONObject();
+                    requestClose.put("type", "closeOrder");
+                    requestClose.put("tableNum", taula);
+                    ws.send(requestClose.toString());
 
-                    ws.send(request.toString());
-                    Toast.makeText(this, "Comanda tancada correctament", Toast.LENGTH_SHORT).show();
+                    AppData.getInstance().table.order.clear();
+
+                    JSONObject requestNewOrder = new JSONObject();
+                    requestNewOrder.put("type", "newOrder");
+                    requestNewOrder.put("waiter", camarero);
+                    requestNewOrder.put("tableNum", taula);
+                    requestNewOrder.put("products", new JSONArray());
+                    ws.send(requestNewOrder.toString());
+
+                    Toast.makeText(this, "Comanda tancada i nova creada", Toast.LENGTH_SHORT).show();
                     finish();
                 } catch (JSONException e) {
                     Toast.makeText(this, "Error en JSON", Toast.LENGTH_SHORT).show();
@@ -100,6 +112,7 @@ public class OrderActivity extends AppCompatActivity {
                 Toast.makeText(this, "WebSocket no connectat", Toast.LENGTH_LONG).show();
             }
         });
+
     }
 
     @Override

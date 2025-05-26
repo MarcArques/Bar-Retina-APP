@@ -78,10 +78,10 @@
         android:id="@+id/closeOrderButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tancar Comanda"
-        android:backgroundTint="@android:color/holo_red_light"
-        android:textColor="@android:color/white"
         android:layout_margin="12dp"
-        android:layout_marginTop="0dp"/>
+        android:layout_marginTop="0dp"
+        android:backgroundTint="@android:color/holo_red_light"
+        android:text="Nova Comanda"
+        android:textColor="@android:color/white" />
 
 </LinearLayout>
