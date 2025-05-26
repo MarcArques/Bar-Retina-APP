@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -40,6 +41,12 @@ public class TablesActivity extends AppCompatActivity {
         tableRecycler.setLayoutManager(new GridLayoutManager(this, 2));
         adapter = new TableAdapter(this, this::finish);
         tableRecycler.setAdapter(adapter);
+
+        ImageButton configButton = findViewById(R.id.configButton);
+        configButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CtrlConfig.class);
+            startActivity(intent);
+        });
 
         handleConfig();
     }
@@ -113,4 +120,5 @@ public class TablesActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
 }
